@@ -112,7 +112,7 @@ public class EditorActivity extends AppCompatActivity implements
             // (It doesn't make sense to delete a product that hasn't been created yet.)
             invalidateOptionsMenu();
         } else {
-            // Otherwise this is an existing product, so change app bar to say "Edit Pet"
+            // Otherwise this is an existing product, so change app bar to say "Edit Product"
             setTitle(getString(R.string.editor_activity_title_edit_product));
 
             // Initialize a loader to read the product data from the database
@@ -288,7 +288,7 @@ public class EditorActivity extends AppCompatActivity implements
             isAllOk = false;
             mImageButton.setError("Missing image");
         }
-        
+
         if (!isAllOk) {
             return false;
         }
@@ -322,7 +322,7 @@ public class EditorActivity extends AppCompatActivity implements
                         Toast.LENGTH_SHORT).show();
             }
         } else {
-            // Otherwise this is an EXISTING product, so update the product with content URI: mCurrentPetUri
+            // Otherwise this is an EXISTING product, so update the product with content URI: mCurrentProductUri
             // and pass in the new ContentValues. Pass in null for the selection and selection args
             // because mCurrentProductUri will already identify the correct row in the database that
             // we want to modify.
@@ -407,7 +407,7 @@ public class EditorActivity extends AppCompatActivity implements
 
             // Respond to a click on the "Up" arrow button in the app bar
             case android.R.id.home:
-                // If the pet hasn't changed, continue with navigating up to parent activity
+                // If the product hasn't changed, continue with navigating up to parent activity
                 // which is the {@link CatalogActivity}.
                 if (!mProductHasChanged) {
                     NavUtils.navigateUpFromSameTask(EditorActivity.this);
@@ -438,7 +438,7 @@ public class EditorActivity extends AppCompatActivity implements
      */
     @Override
     public void onBackPressed() {
-        // If the pet hasn't changed, continue with handling back button press
+        // If the product hasn't changed, continue with handling back button press
         if (!mProductHasChanged) {
             super.onBackPressed();
             return;
@@ -542,7 +542,7 @@ public class EditorActivity extends AppCompatActivity implements
         // Proceed with moving to the first row of the cursor and reading data from it
         // (This should be the only row in the cursor)
         if (cursor.moveToFirst()) {
-            // Find the columns of pet attributes that we're interested in
+            // Find the columns of product attributes that we're interested in
             int nameColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_NAME);
             int priceColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_PRICE);
             int quanitityColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_QUANTITY);
@@ -616,7 +616,7 @@ public class EditorActivity extends AppCompatActivity implements
         // Only perform the delete if this is an existing product.
         if (mCurrentProductUri != null) {
             // Call the ContentResolver to delete the product at the given content URI.
-            // Pass in null for the selection and selection args because the mCurrentPetUri
+            // Pass in null for the selection and selection args because the mCurrentProductUri
             // content URI already identifies the product that we want.
             int rowsDeleted = getContentResolver().delete(mCurrentProductUri, null, null);
 

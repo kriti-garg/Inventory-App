@@ -30,8 +30,8 @@ import com.example.kriti.inventoryapp.data.ProductContract.ProductEntry;
 
 /**
  * {@link ProductCursorAdapter} is an adapter for a list or grid view
- * that uses a {@link Cursor} of pet data as its data source. This adapter knows
- * how to create list items for each row of pet data in the {@link Cursor}.
+ * that uses a {@link Cursor} of product data as its data source. This adapter knows
+ * how to create list items for each row of product data in the {@link Cursor}.
  */
 public class ProductCursorAdapter extends CursorAdapter {
 
@@ -64,8 +64,8 @@ public class ProductCursorAdapter extends CursorAdapter {
     }
 
     /**
-     * This method binds the pet data (in the current row pointed to by cursor) to the given
-     * list item layout. For example, the name for the current pet can be set on the name TextView
+     * This method binds the product data (in the current row pointed to by cursor) to the given
+     * list item layout. For example, the name for the current product can be set on the name TextView
      * in the list item layout.
      *
      * @param view    Existing view, returned earlier by newView() method
@@ -83,7 +83,7 @@ public class ProductCursorAdapter extends CursorAdapter {
         ImageView order = (ImageView) view.findViewById(R.id.order);
 
 
-        // Find the columns of pet attributes that we're interested in
+        // Find the columns of product attributes that we're interested in
         int nameColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_NAME);
         int priceColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_PRICE);
         int quantityColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_QUANTITY);
@@ -91,12 +91,12 @@ public class ProductCursorAdapter extends CursorAdapter {
         image.setImageURI(Uri.parse(cursor.getString(cursor.getColumnIndex(ProductEntry.COLUMN_IMAGE))));
 
 
-        // Read the pet attributes from the Cursor for the current pet
+        // Read the product attributes from the Cursor for the current product
         String productName = cursor.getString(nameColumnIndex);
         String productPrice = "\u20B9" + " " + cursor.getString(priceColumnIndex);
         final Integer productQuantity = cursor.getInt(quantityColumnIndex);
 
-        // Update the TextViews with the attributes for the current pet
+        // Update the TextViews with the attributes for the current product
         nameTextView.setText(productName);
         priceTextView.setText(productPrice);
         quantityTextView.setText(productQuantity.toString());
