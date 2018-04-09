@@ -288,9 +288,7 @@ public class EditorActivity extends AppCompatActivity implements
             isAllOk = false;
             mImageButton.setError("Missing image");
         }
-        Log.d("image",path);
-
-        mImageUri.toString();
+        
         if (!isAllOk) {
             return false;
         }
