@@ -54,6 +54,8 @@ public class EditorActivity extends AppCompatActivity implements
      */
     private Uri mCurrentProductUri;
 
+    private Uri mImageUri;
+
     /**
      * EditText field to enter the product's name
      */
@@ -166,7 +168,6 @@ public class EditorActivity extends AppCompatActivity implements
         mImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.i("image", "Image not clclc");
                 checkPermission();
                 mProductHasChanged = true;
             }
@@ -257,8 +258,8 @@ public class EditorActivity extends AppCompatActivity implements
             // provided to this method as a parameter.  Pull that uri using "resultData.getData()"
 
             if (resultData != null) {
-                mCurrentProductUri = resultData.getData();
-                mProductimageImageView.setImageURI(mCurrentProductUri);
+                mImageUri = resultData.getData();
+                mProductimageImageView.setImageURI(mImageUri);
                 mProductimageImageView.invalidate();
             }
         }
@@ -267,70 +268,111 @@ public class EditorActivity extends AppCompatActivity implements
     /**
      * Get user input from editor and save product into database.
      */
-    private void saveProduct() {
+    private boolean saveProduct() {
         // Read from input fields
         // Use trim to eliminate leading or trailing white space
         String nameString = mProductNameEditText.getText().toString().trim();
         String priceString = mProductPriceEditText.getText().toString().trim();
         String quantityString = mProductQuantityEditText.getText().toString().trim();
-
-        Integer quantity = Integer.parseInt(quantityString);
+        Integer quantity = 0;
+        if(!TextUtils.isEmpty(quantityString))
+            quantity = Integer.parseInt(quantityString);
         String supplierNameString = mSupplierNameEditText.getText().toString().trim();
         String supplierPhoneString = mSupplierPhoneEditText.getText().toString().trim();
 
         // Check if this is supposed to be a new product
         // and check if all the fields in the editor are blank
-        if (mCurrentProductUri == null &&
+        if (mImageUri == null &&
                 TextUtils.isEmpty(nameString) && TextUtils.isEmpty(priceString) &&
                 TextUtils.isEmpty(quantityString) && TextUtils.isEmpty(supplierNameString) &&
                 TextUtils.isEmpty(supplierPhoneString)) {
             // Since no fields were modified, we can return early without creating a new product.
             // No need to create ContentValues and no need to do any ContentProvider operations.
-            return;
+            return true;
         }
 
-        // Create a ContentValues object where column names are the keys,
-        // and product attributes from the editor are the values.
-        ContentValues values = new ContentValues();
-        values.put(ProductEntry.COLUMN_PRODUCT_NAME, nameString);
-        values.put(ProductEntry.COLUMN_PRODUCT_PRICE, priceString);
-        values.put(ProductEntry.COLUMN_PRODUCT_QUANTITY, quantity);
-        values.put(ProductEntry.COLUMN_SUPPLIERS_NAME, supplierNameString);
-        values.put(ProductEntry.COLUMN_SUPPLIERS_CONTACT_NUMBER, supplierPhoneString);
+        boolean isAllOk = true;
+        if (!checkIfValueSet(mProductNameEditText, nameString, "name")) {
+            isAllOk = false;
+        }
+        if (!checkIfValueSet(mProductPriceEditText, priceString, "price")) {
+            isAllOk = false;
+        }
+        if (!checkIfValueSet(mProductQuantityEditText, quantityString, "quantity")) {
+            isAllOk = false;
+        }
+        if (!checkIfValueSet(mSupplierNameEditText, supplierNameString, "supplier name")) {
+            isAllOk = false;
+        }
+        if (!checkIfValueSet(mSupplierPhoneEditText, supplierPhoneString, "supplier phone")) {
+            isAllOk = false;
+        }
 
-        // Determine if this is a new or existing product by checking if mCurrentProductUri is null or not
-        if (mCurrentProductUri == null) {
-            // This is a NEW product, so insert a new product into the provider,
-            // returning the content URI for the new product.
-            Uri newUri = getContentResolver().insert(ProductEntry.CONTENT_URI, values);
+        if (mImageUri == null) {
+            isAllOk = false;
+            mImageButton.setError("Missing image");
+        }
+        if (!isAllOk) {
+            return false;
+        }
 
-            // Show a toast message depending on whether or not the insertion was successful.
-            if (newUri == null) {
-                // If the new content URI is null, then there was an error with insertion.
-                Toast.makeText(this, getString(R.string.editor_insert_product_failed),
-                        Toast.LENGTH_SHORT).show();
+
+            // Create a ContentValues object where column names are the keys,
+            // and product attributes from the editor are the values.
+            ContentValues values = new ContentValues();
+            values.put(ProductEntry.COLUMN_PRODUCT_NAME, nameString);
+            values.put(ProductEntry.COLUMN_PRODUCT_PRICE, priceString);
+            values.put(ProductEntry.COLUMN_PRODUCT_QUANTITY, quantity);
+            values.put(ProductEntry.COLUMN_SUPPLIERS_NAME, supplierNameString);
+            values.put(ProductEntry.COLUMN_SUPPLIERS_CONTACT_NUMBER, supplierPhoneString);
+            values.put(ProductEntry.COLUMN_IMAGE, mImageUri.toString());
+
+
+            // Determine if this is a new or existing product by checking if mCurrentProductUri is null or not
+            if (mCurrentProductUri == null) {
+                // This is a NEW product, so insert a new product into the provider,
+                // returning the content URI for the new product.
+                Uri newUri = getContentResolver().insert(ProductEntry.CONTENT_URI, values);
+
+                // Show a toast message depending on whether or not the insertion was successful.
+                if (newUri == null) {
+                    // If the new content URI is null, then there was an error with insertion.
+                    Toast.makeText(this, getString(R.string.editor_insert_product_failed),
+                            Toast.LENGTH_SHORT).show();
+                } else {
+                    // Otherwise, the insertion was successful and we can display a toast.
+                    Toast.makeText(this, getString(R.string.editor_insert_product_successful),
+                            Toast.LENGTH_SHORT).show();
+                }
             } else {
-                // Otherwise, the insertion was successful and we can display a toast.
-                Toast.makeText(this, getString(R.string.editor_insert_product_successful),
-                        Toast.LENGTH_SHORT).show();
+                // Otherwise this is an EXISTING product, so update the product with content URI: mCurrentPetUri
+                // and pass in the new ContentValues. Pass in null for the selection and selection args
+                // because mCurrentProductUri will already identify the correct row in the database that
+                // we want to modify.
+                int rowsAffected = getContentResolver().update(mCurrentProductUri, values, null, null);
+
+                // Show a toast message depending on whether or not the update was successful.
+                if (rowsAffected == 0) {
+                    // If no rows were affected, then there was an error with the update.
+                    Toast.makeText(this, getString(R.string.editor_update_product_failed),
+                            Toast.LENGTH_SHORT).show();
+                } else {
+                    // Otherwise, the update was successful and we can display a toast.
+                    Toast.makeText(this, getString(R.string.editor_update_product_successful),
+                            Toast.LENGTH_SHORT).show();
+                }
             }
+            return true;
+
+    }
+
+    private boolean checkIfValueSet(EditText box, String text, String description) {
+        if (TextUtils.isEmpty(text)){
+            box.setError("Missing product " + description);
+            return false;
         } else {
-            // Otherwise this is an EXISTING product, so update the product with content URI: mCurrentPetUri
-            // and pass in the new ContentValues. Pass in null for the selection and selection args
-            // because mCurrentProductUri will already identify the correct row in the database that
-            // we want to modify.
-            int rowsAffected = getContentResolver().update(mCurrentProductUri, values, null, null);
-
-            // Show a toast message depending on whether or not the update was successful.
-            if (rowsAffected == 0) {
-                // If no rows were affected, then there was an error with the update.
-                Toast.makeText(this, getString(R.string.editor_update_product_failed),
-                        Toast.LENGTH_SHORT).show();
-            } else {
-                // Otherwise, the update was successful and we can display a toast.
-                Toast.makeText(this, getString(R.string.editor_update_product_successful),
-                        Toast.LENGTH_SHORT).show();
-            }
+            box.setError(null);
+            return true;
         }
     }
 
@@ -365,7 +407,9 @@ public class EditorActivity extends AppCompatActivity implements
             // Respond to a click on the "Save" menu option
             case R.id.action_save:
                 // Save product to database
-                saveProduct();
+                if(!saveProduct()){
+                    return true;
+                };
                 // Exit activity
                 finish();
                 return true;
