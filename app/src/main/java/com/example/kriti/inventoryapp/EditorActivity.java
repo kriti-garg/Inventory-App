@@ -543,6 +543,7 @@ public class EditorActivity extends AppCompatActivity implements
             int quanitityColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_QUANTITY);
             int supplierNameColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_SUPPLIERS_NAME);
             int supplierPhoneColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_SUPPLIERS_CONTACT_NUMBER);
+            int productImageIndex = cursor.getColumnIndex(ProductEntry.COLUMN_IMAGE);
 
             // Extract out the value from the Cursor for the given column index
             String name = cursor.getString(nameColumnIndex);
@@ -550,6 +551,7 @@ public class EditorActivity extends AppCompatActivity implements
             int quanitity = cursor.getInt(quanitityColumnIndex);
             String supplierName = cursor.getString(supplierNameColumnIndex);
             String supplierPhone = cursor.getString(supplierPhoneColumnIndex);
+            Uri image = Uri.parse(cursor.getString(productImageIndex));
 
             // Update the views on the screen with the values from the database
             mProductNameEditText.setText(name);
@@ -557,6 +559,7 @@ public class EditorActivity extends AppCompatActivity implements
             mProductQuantityEditText.setText(Integer.toString(quanitity));
             mSupplierNameEditText.setText(supplierName);
             mSupplierPhoneEditText.setText(supplierPhone);
+            mProductimageImageView.setImageURI(image);
         }
     }
 
