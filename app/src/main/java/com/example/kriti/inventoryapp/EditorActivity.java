@@ -252,9 +252,15 @@ public class EditorActivity extends AppCompatActivity implements
             quantity = Integer.parseInt(quantityString);
         String supplierNameString = mSupplierNameEditText.getText().toString().trim();
         String supplierPhoneString = mSupplierPhoneEditText.getText().toString().trim();
-        String path = mProductimageImageView.getTag().toString();
-        Log.i("image",path);
-        mImageUri = Uri.parse(path);
+        try {
+            String path = mProductimageImageView.getTag().toString();
+            Log.i("image",path);
+            mImageUri = Uri.parse(path);
+        }
+        catch (Exception e){
+            
+        }
+
 
         // Check if this is supposed to be a new product
         // and check if all the fields in the editor are blank
