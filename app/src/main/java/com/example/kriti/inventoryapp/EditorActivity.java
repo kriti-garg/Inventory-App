@@ -1,23 +1,32 @@
 package com.example.kriti.inventoryapp;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.LoaderManager;
 import android.content.ContentValues;
+import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NavUtils;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -35,6 +44,10 @@ public class EditorActivity extends AppCompatActivity implements
      * Identifier for the product data loader
      */
     private static final int EXISTING_PRODUCT_LOADER = 0;
+
+    private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 1;
+
+    private static final int PICK_IMAGE_REQUEST = 0;
 
     /**
      * Content URI for the existing product (null if it's a new product)
@@ -71,6 +84,9 @@ public class EditorActivity extends AppCompatActivity implements
      */
     private EditText mProductImageEditText;
 
+    private ImageButton mdecreaseQuantity;
+    private ImageButton mincreaseQuantity;
+
     /* Button for selecting the image */
     private Button mImageButton;
 
@@ -96,8 +112,6 @@ public class EditorActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editor);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
         // Examine the intent that was used to launch this activity,
         // in order to figure out if we're creating a new product or editing an existing one.
@@ -128,8 +142,36 @@ public class EditorActivity extends AppCompatActivity implements
         mProductQuantityEditText = (EditText) findViewById(R.id.edit_product_quantity);
         mSupplierNameEditText = (EditText) findViewById(R.id.edit_supplier_name);
         mSupplierPhoneEditText = (EditText) findViewById(R.id.edit_supplier_phone);
-        mImageButton = findViewById(R.id.image_button);
+        mImageButton = findViewById(R.id.select_image);
         mProductimageImageView = findViewById(R.id.image_view);
+        mdecreaseQuantity = (ImageButton) findViewById(R.id.decrease_quantity);
+        mincreaseQuantity = (ImageButton) findViewById(R.id.increase_quantity);
+
+        mdecreaseQuantity.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                subtractOneToQuantity();
+                mProductHasChanged = true;
+            }
+        });
+
+        mincreaseQuantity.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                sumOneToQuantity();
+                mProductHasChanged = true;
+            }
+        });
+
+        mImageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.i("image", "Image not clclc");
+                checkPermission();
+                mProductHasChanged = true;
+            }
+        });
+
         // Setup OnTouchListeners on all the input fields, so we can determine if the user
         // has touched or modified them. This will let us know if there are unsaved changes
         // or not, if the user tries to leave the editor without saving.
@@ -141,6 +183,87 @@ public class EditorActivity extends AppCompatActivity implements
         mImageButton.setOnTouchListener(mTouchListener);
     }
 
+    private void subtractOneToQuantity() {
+        String previousValueString = mProductQuantityEditText.getText().toString();
+        int previousValue;
+        if (previousValueString.isEmpty() || previousValueString.equals("0")){
+            return;
+        } else {
+            previousValue = Integer.parseInt(previousValueString);
+            mProductQuantityEditText.setText(String.valueOf(previousValue - 1));
+        }
+    }
+
+    private void sumOneToQuantity() {
+        String previousValueString = mProductQuantityEditText.getText().toString();
+        int previousValue;
+        if (previousValueString.isEmpty()) {
+            previousValue = 0;
+        } else {
+            previousValue = Integer.parseInt(previousValueString);
+        }
+        mProductQuantityEditText.setText(String.valueOf(previousValue + 1));
+    }
+
+    public void checkPermission(){
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
+            return;
+        }
+        openImageSelector();
+    }
+
+    public void openImageSelector() {
+        Intent intent;
+        if (Build.VERSION.SDK_INT < 19) {
+            intent = new Intent(Intent.ACTION_GET_CONTENT);
+        } else {
+            intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+        }
+        intent.setType("image/*");
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    openImageSelector();
+                    // permission was granted
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
+        // The ACTION_OPEN_DOCUMENT intent was sent with the request code READ_REQUEST_CODE.
+        // If the request code seen here doesn't match, it's the response to some other intent,
+        // and the below code shouldn't run at all.
+
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK) {
+            // The document selected by the user won't be returned in the intent.
+            // Instead, a URI to that document will be contained in the return intent
+            // provided to this method as a parameter.  Pull that uri using "resultData.getData()"
+
+            if (resultData != null) {
+                mCurrentProductUri = resultData.getData();
+                mProductimageImageView.setImageURI(mCurrentProductUri);
+                mProductimageImageView.invalidate();
+            }
+        }
+    }
+
     /**
      * Get user input from editor and save product into database.
      */
@@ -150,6 +273,7 @@ public class EditorActivity extends AppCompatActivity implements
         String nameString = mProductNameEditText.getText().toString().trim();
         String priceString = mProductPriceEditText.getText().toString().trim();
         String quantityString = mProductQuantityEditText.getText().toString().trim();
+
         Integer quantity = Integer.parseInt(quantityString);
         String supplierNameString = mSupplierNameEditText.getText().toString().trim();
         String supplierPhoneString = mSupplierPhoneEditText.getText().toString().trim();
@@ -218,6 +342,7 @@ public class EditorActivity extends AppCompatActivity implements
         return true;
     }
 
+
     /**
      * This method is called after invalidateOptionsMenu(), so that the
      * menu can be updated (some menu items can be hidden or made visible).
@@ -275,6 +400,25 @@ public class EditorActivity extends AppCompatActivity implements
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+        String[] projection = {
+                ProductEntry._ID,
+                ProductEntry.COLUMN_PRODUCT_NAME,
+                ProductEntry.COLUMN_PRODUCT_PRICE,
+                ProductEntry.COLUMN_PRODUCT_QUANTITY,
+                ProductEntry.COLUMN_SUPPLIERS_NAME,
+                ProductEntry.COLUMN_SUPPLIERS_CONTACT_NUMBER,
+                ProductEntry.COLUMN_IMAGE};
+
+        return new CursorLoader(this,
+                ProductEntry.CONTENT_URI,
+                projection,
+                null,
+                null,
+                null);
     }
 
     @Override
@@ -404,54 +548,6 @@ public class EditorActivity extends AppCompatActivity implements
         // Close the activity
         finish();
     }
-
-
-
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // User clicked on a menu option in the app bar overflow menu
-        switch (item.getItemId()) {
-            // Respond to a click on the "Save" menu option
-            case R.id.action_save:
-                // Save product to database
-                saveProduct();
-                // Exit activity
-                finish();
-                return true;
-            // Respond to a click on the "Delete" menu option
-            case R.id.action_delete:
-                // Pop up confirmation dialog for deletion
-                showDeleteConfirmationDialog();
-                return true;
-            // Respond to a click on the "Up" arrow button in the app bar
-            case android.R.id.home:
-                // If the product hasn't changed, continue with navigating up to parent activity
-                // which is the {@link CatalogActivity}.
-                if (!mPetHasChanged) {
-                    NavUtils.navigateUpFromSameTask(EditorActivity.this);
-                    return true;
-                }
-
-                // Otherwise if there are unsaved changes, setup a dialog to warn the user.
-                // Create a click listener to handle the user confirming that
-                // changes should be discarded.
-                DialogInterface.OnClickListener discardButtonClickListener =
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                // User clicked "Discard" button, navigate to parent activity.
-                                NavUtils.navigateUpFromSameTask(EditorActivity.this);
-                            }
-                        };
-
-                // Show a dialog that notifies the user they have unsaved changes
-                showUnsavedChangesDialog(discardButtonClickListener);
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
 
 }
 

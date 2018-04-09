@@ -6,20 +6,6 @@
     android:layout_height="match_parent"
     tools:context="com.example.kriti.inventoryapp.MainActivity">
 
-    <android.support.design.widget.AppBarLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
-
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
-
-    </android.support.design.widget.AppBarLayout>
-
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -27,12 +13,7 @@
         <ListView
             android:id="@+id/list"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
-            android:layout_marginTop="55dp"
-            android:padding="16dp"/>
+            android:layout_height="match_parent"/>
 
         <!-- Empty view for the list -->
         <RelativeLayout
@@ -46,7 +27,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
-                android:src="@drawable/ic_local_grocery_store_24dp"/>
+                android:src="@drawable/empty"/>
 
             <TextView
                 android:id="@+id/empty_title_text"
@@ -56,7 +37,7 @@
                 android:layout_centerHorizontal="true"
                 android:fontFamily="sans-serif-medium"
                 android:paddingTop="16dp"
-                android:text="Your Cart is Empty!!"
+                android:text="Cart is Empty!!"
                 android:textAppearance="?android:textAppearanceMedium"/>
 
             <TextView
@@ -66,8 +47,9 @@
                 android:layout_below="@+id/empty_title_text"
                 android:layout_centerHorizontal="true"
                 android:fontFamily="sans-serif"
-                android:paddingTop="8dp"
-                android:text="Add some stuff now!"
+                android:paddingTop="4dp"
+                android:layout_margin="20dp"
+                android:text="Looks like you have no items in the shopping cart. Add some stuff now!"
                 android:textAppearance="?android:textAppearanceSmall"
                 android:textColor="#A2AAB0"/>
         </RelativeLayout>
@@ -81,6 +63,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
-        app:srcCompat="@android:drawable/ic_input_add" />
+        app:srcCompat="@drawable/ic_add_white" />
 
 </android.support.design.widget.CoordinatorLayout>

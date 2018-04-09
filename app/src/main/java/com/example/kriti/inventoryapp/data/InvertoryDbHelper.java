@@ -22,6 +22,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteOpenHelper;
 import com.example.kriti.inventoryapp.data.ProductContract.ProductEntry;
 
+import static com.example.kriti.inventoryapp.data.ProductContract.ProductEntry.TABLE_NAME;
+
 /**
  * Database helper for Inventory app. Manages database creation and version management.
  */
@@ -37,7 +39,7 @@ public class InvertoryDbHelper extends SQLiteOpenHelper {
     /**
      * Database version. If you change the database schema, you must increment the database version.
      */
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     /**
      * Constructs a new instance of {@link InvertoryDbHelper}.
@@ -55,7 +57,7 @@ public class InvertoryDbHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         // Create a String that contains the SQL statement to create the products table
         String SQL_CREATE_PRODUCTS_TABLE = "CREATE TABLE "
-                + ProductEntry.TABLE_NAME + " ("
+                + TABLE_NAME + " ("
                 + ProductEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + ProductEntry.COLUMN_PRODUCT_NAME + " TEXT NOT NULL, "
                 + ProductEntry.COLUMN_PRODUCT_PRICE + " FLOAT NOT NULL, "
@@ -73,6 +75,8 @@ public class InvertoryDbHelper extends SQLiteOpenHelper {
      */
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        db.execSQL("DROP TABLE IF EXISTS "+TABLE_NAME);
+        onCreate(db);
         // The database is still at version 1, so there's nothing to do be done here.
     }
 }
