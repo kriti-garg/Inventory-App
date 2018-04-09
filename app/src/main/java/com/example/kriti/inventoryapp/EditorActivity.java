@@ -81,11 +81,6 @@ public class EditorActivity extends AppCompatActivity implements
      */
     private EditText mSupplierPhoneEditText;
 
-    /**
-     * EditText field to enter the product's image
-     */
-    private EditText mProductImageEditText;
-
     private ImageButton mdecreaseQuantity;
     private ImageButton mincreaseQuantity;
 
@@ -97,18 +92,6 @@ public class EditorActivity extends AppCompatActivity implements
 
     /** Boolean flag that keeps track of whether the product has been edited (true) or not (false) */
     private boolean mProductHasChanged = false;
-
-    /**
-     * OnTouchListener that listens for any user touches on a View, implying that they are modifying
-     * the view, and we change the mProductHasChanged boolean to true.
-     */
-    private View.OnTouchListener mTouchListener = new View.OnTouchListener() {
-        @Override
-        public boolean onTouch(View view, MotionEvent motionEvent) {
-            mProductHasChanged = true;
-            return false;
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -172,16 +155,6 @@ public class EditorActivity extends AppCompatActivity implements
                 mProductHasChanged = true;
             }
         });
-
-        // Setup OnTouchListeners on all the input fields, so we can determine if the user
-        // has touched or modified them. This will let us know if there are unsaved changes
-        // or not, if the user tries to leave the editor without saving.
-        mProductNameEditText.setOnTouchListener(mTouchListener);
-        mProductPriceEditText.setOnTouchListener(mTouchListener);
-        mProductQuantityEditText.setOnTouchListener(mTouchListener);
-        mSupplierNameEditText.setOnTouchListener(mTouchListener);
-        mSupplierPhoneEditText.setOnTouchListener(mTouchListener);
-        mImageButton.setOnTouchListener(mTouchListener);
     }
 
     private void subtractOneToQuantity() {
@@ -455,6 +428,32 @@ public class EditorActivity extends AppCompatActivity implements
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * This method is called when the back button is pressed.
+     */
+    @Override
+    public void onBackPressed() {
+        // If the pet hasn't changed, continue with handling back button press
+        if (!mProductHasChanged) {
+            super.onBackPressed();
+            return;
+        }
+
+        // Otherwise if there are unsaved changes, setup a dialog to warn the user.
+        // Create a click listener to handle the user confirming that changes should be discarded.
+        DialogInterface.OnClickListener discardButtonClickListener =
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        // User clicked "Discard" button, close the current activity.
+                        finish();
+                    }
+                };
+
+        // Show dialog that there are unsaved changes
+        showUnsavedChangesDialog(discardButtonClickListener);
+    }
+
     private void showOrderConfirmationDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(R.string.order_message);
@@ -522,7 +521,7 @@ public class EditorActivity extends AppCompatActivity implements
                 ProductEntry.COLUMN_IMAGE};
 
         return new CursorLoader(this,
-                ProductEntry.CONTENT_URI,
+                mCurrentProductUri,
                 projection,
                 null,
                 null,
@@ -558,7 +557,6 @@ public class EditorActivity extends AppCompatActivity implements
             mProductQuantityEditText.setText(Integer.toString(quanitity));
             mSupplierNameEditText.setText(supplierName);
             mSupplierPhoneEditText.setText(supplierPhone);
-            mImageButton.setOnTouchListener(mTouchListener);
         }
     }
 
