@@ -15,11 +15,11 @@
  */
 
 package com.example.kriti.inventoryapp.data;
+
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import android.database.sqlite.SQLiteOpenHelper;
 import com.example.kriti.inventoryapp.data.ProductContract.ProductEntry;
 
 import static com.example.kriti.inventoryapp.data.ProductContract.ProductEntry.TABLE_NAME;
@@ -75,7 +75,7 @@ public class InvertoryDbHelper extends SQLiteOpenHelper {
      */
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS "+TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
         onCreate(db);
         // The database is still at version 1, so there's nothing to do be done here.
     }

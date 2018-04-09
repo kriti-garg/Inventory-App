@@ -19,7 +19,6 @@ package com.example.kriti.inventoryapp;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -94,7 +93,7 @@ public class ProductCursorAdapter extends CursorAdapter {
 
         // Read the pet attributes from the Cursor for the current pet
         String productName = cursor.getString(nameColumnIndex);
-        String productPrice = "\u20B9" +" " + cursor.getString(priceColumnIndex);
+        String productPrice = "\u20B9" + " " + cursor.getString(priceColumnIndex);
         final Integer productQuantity = cursor.getInt(quantityColumnIndex);
 
         // Update the TextViews with the attributes for the current pet

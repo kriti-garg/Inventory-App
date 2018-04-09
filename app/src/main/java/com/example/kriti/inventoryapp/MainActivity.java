@@ -10,10 +10,9 @@ import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v7.widget.Toolbar;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -25,10 +24,14 @@ import com.example.kriti.inventoryapp.data.ProductContract.ProductEntry;
 
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
-    /** Identifier for the pet data loader */
+    /**
+     * Identifier for the pet data loader
+     */
     private static final int PRODUCT_LOADER = 0;
 
-    /** Adapter for the ListView */
+    /**
+     * Adapter for the ListView
+     */
     ProductCursorAdapter mCursorAdapter;
 
     @Override
@@ -138,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public void clickOnSale(long id, int quantity) {
         int newQuantity = 0;
         if (quantity > 0) {
-            newQuantity = quantity -1;
+            newQuantity = quantity - 1;
         }
         ContentValues values = new ContentValues();
         values.put(ProductEntry.COLUMN_PRODUCT_QUANTITY, newQuantity);
@@ -165,9 +168,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         Uri newUri = getContentResolver().insert(ProductEntry.CONTENT_URI, values);
 
     }
-        /**
-         * Helper method to delete all products in the database.
-         */
+
+    /**
+     * Helper method to delete all products in the database.
+     */
     private void deleteAllProducts() {
         int rowsDeleted = getContentResolver().delete(ProductEntry.CONTENT_URI, null, null);
         Log.v("CatalogActivity", rowsDeleted + " rows deleted from pet database");
@@ -182,8 +186,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 ProductEntry.COLUMN_PRODUCT_PRICE,
                 ProductEntry.COLUMN_PRODUCT_QUANTITY,
                 ProductEntry.COLUMN_SUPPLIERS_NAME,
-                ProductEntry.COLUMN_SUPPLIERS_CONTACT_NUMBER ,
-                ProductEntry.COLUMN_IMAGE ,
+                ProductEntry.COLUMN_SUPPLIERS_CONTACT_NUMBER,
+                ProductEntry.COLUMN_IMAGE,
         };
 
         // This loader will execute the ContentProvider's query method on a background thread
