@@ -36,14 +36,17 @@ import com.example.kriti.inventoryapp.data.ProductContract.ProductEntry;
  */
 public class ProductCursorAdapter extends CursorAdapter {
 
+    private final MainActivity activity;
+
     /**
      * Constructs a new {@link ProductCursorAdapter}.
      *
      * @param context The context
      * @param c       The cursor from which to get the data.
      */
-    public ProductCursorAdapter(Context context, Cursor c) {
+    public ProductCursorAdapter(MainActivity context, Cursor c) {
         super(context, c, 0 /* flags */);
+        this.activity = context;
     }
 
     /**
@@ -77,7 +80,8 @@ public class ProductCursorAdapter extends CursorAdapter {
         TextView nameTextView = (TextView) view.findViewById(R.id.name);
         TextView priceTextView = (TextView) view.findViewById(R.id.price);
         TextView quantityTextView = view.findViewById(R.id.quantity);
-        ImageView image = (ImageView) view.findViewById(R.id.image_view1);
+        ImageView image = (ImageView) view.findViewById(R.id.image_view);
+        ImageView order = (ImageView) view.findViewById(R.id.order);
 
 
         // Find the columns of pet attributes that we're interested in
@@ -90,13 +94,23 @@ public class ProductCursorAdapter extends CursorAdapter {
 
         // Read the pet attributes from the Cursor for the current pet
         String productName = cursor.getString(nameColumnIndex);
-        String productPrice = cursor.getString(priceColumnIndex);
-        String productQuantity = cursor.getString(quantityColumnIndex);
+        String productPrice = "\u20B9" +" " + cursor.getString(priceColumnIndex);
+        final Integer productQuantity = cursor.getInt(quantityColumnIndex);
 
         // Update the TextViews with the attributes for the current pet
         nameTextView.setText(productName);
         priceTextView.setText(productPrice);
-        quantityTextView.setText(productQuantity);
+        quantityTextView.setText(productQuantity.toString());
+
+        final long id = cursor.getLong(cursor.getColumnIndex(ProductEntry._ID));
+        order.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                activity.clickOnSale(id,
+                        productQuantity);
+            }
+        });
+
     }
 }
 

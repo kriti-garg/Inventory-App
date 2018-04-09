@@ -34,6 +34,9 @@
     <!-- Dialog message to ask the user to confirm deleting the current product [CHAR LIMIT=NONE] -->
     <string name="delete_dialog_msg">Delete this product?</string>
 
+    <!-- Dialog message to ask the user to confirm deleting all the products [CHAR LIMIT=NONE] -->
+    <string name="deleteall_dialog_msg">Delete all products?</string>
+
     <!-- Toast message in editor when current product was successfully deleted [CHAR LIMIT=NONE] -->
     <string name="editor_delete_product_successful">Product deleted</string>
 
@@ -78,4 +81,8 @@
 
     <!-- Text hint for image field in the editor [CHAR LIMIT=30] -->
     <string name="category_image">Image</string>
+
+    <string name="order_message">You can place an order for this item by phone</string>
+    <string name="phone">Phone</string>
+    <string name="Rs">\u20B9</string>
 </resources>
