@@ -34,7 +34,7 @@ public class InvertoryDbHelper extends SQLiteOpenHelper {
     /**
      * Name of the database file
      */
-    private static final String DATABASE_NAME = "inventory_2.db";
+    private static final String DATABASE_NAME = "inventory_3.db";
 
     /**
      * Database version. If you change the database schema, you must increment the database version.

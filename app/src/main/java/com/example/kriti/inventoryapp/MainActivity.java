@@ -139,13 +139,16 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     public void clickOnSale(long id, int quantity) {
+        Log.i("id","d"+id);
         int newQuantity = 0;
         if (quantity > 0) {
             newQuantity = quantity - 1;
         }
+        String selection = ProductEntry._ID + "=?";
+        String[] selectionArgs = new String[] { String.valueOf(id) };
         ContentValues values = new ContentValues();
         values.put(ProductEntry.COLUMN_PRODUCT_QUANTITY, newQuantity);
-        getContentResolver().update(ProductEntry.CONTENT_URI, values, null, null);
+        getContentResolver().update(ProductEntry.CONTENT_URI, values, selection, selectionArgs);
     }
 
     /**

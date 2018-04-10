@@ -257,10 +257,9 @@ public class EditorActivity extends AppCompatActivity implements
             Log.i("image",path);
             mImageUri = Uri.parse(path);
         }
-        catch (Exception e){
-            
-        }
+        catch (Exception e) {
 
+        }
 
         // Check if this is supposed to be a new product
         // and check if all the fields in the editor are blank

@@ -19,6 +19,7 @@ package com.example.kriti.inventoryapp;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -102,6 +103,8 @@ public class ProductCursorAdapter extends CursorAdapter {
         quantityTextView.setText(productQuantity.toString());
 
         final long id = cursor.getLong(cursor.getColumnIndex(ProductEntry._ID));
+        String p = "i" + id;
+        Log.i("id",p);
         order.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
