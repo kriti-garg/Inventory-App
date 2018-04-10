@@ -42,6 +42,9 @@ public class EditorActivity extends AppCompatActivity implements
      */
     private static final int EXISTING_PRODUCT_LOADER = 0;
 
+    /**
+     * Identifier for the Read permission from external Storage
+     */
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 1;
 
     private static final int PICK_IMAGE_REQUEST = 0;
@@ -51,6 +54,9 @@ public class EditorActivity extends AppCompatActivity implements
      */
     private Uri mCurrentProductUri;
 
+    /**
+     * Image URI for the existing product (null if it's a new product)
+     */
     private Uri mImageUri;
 
     /**
@@ -78,10 +84,14 @@ public class EditorActivity extends AppCompatActivity implements
      */
     private EditText mSupplierPhoneEditText;
 
-    /* Button for selecting the image */
+    /**
+     *  Button for selecting the image
+     */
     private Button mImageButton;
 
-    /* For displaying the image */
+    /**
+     *  For displaying the image
+     */
     private ImageView mProductimageImageView;
 
     /**
@@ -153,52 +163,6 @@ public class EditorActivity extends AppCompatActivity implements
         });
     }
 
-    private void subtractOneToQuantity() {
-        String previousValueString = mProductQuantityEditText.getText().toString();
-        int previousValue;
-        if (previousValueString.isEmpty() || previousValueString.equals("0")) {
-        } else {
-            previousValue = Integer.parseInt(previousValueString);
-            mProductQuantityEditText.setText(String.valueOf(previousValue - 1));
-        }
-    }
-
-    private void sumOneToQuantity() {
-        String previousValueString = mProductQuantityEditText.getText().toString();
-        int previousValue;
-        if (previousValueString.isEmpty()) {
-            previousValue = 0;
-        } else {
-            previousValue = Integer.parseInt(previousValueString);
-        }
-        mProductQuantityEditText.setText(String.valueOf(previousValue + 1));
-    }
-
-    private void checkPermission() {
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                    MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
-            return;
-        }
-        openImageSelector();
-    }
-
-    private void openImageSelector() {
-        Intent intent;
-        if (Build.VERSION.SDK_INT < 19) {
-            intent = new Intent(Intent.ACTION_GET_CONTENT);
-        } else {
-            intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-            intent.addCategory(Intent.CATEGORY_OPENABLE);
-        }
-        intent.setType("image/*");
-        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
-    }
-
-
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
@@ -232,6 +196,260 @@ public class EditorActivity extends AppCompatActivity implements
                 mProductimageImageView.setTag(mImageUri.toString());
             }
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu options from the res/menu/menu_editor.xml file.
+        // This adds menu items to the app bar.
+        getMenuInflater().inflate(R.menu.menu_editor, menu);
+        return true;
+    }
+
+    /**
+     * This method is called after invalidateOptionsMenu(), so that the
+     * menu can be updated (some menu items can be hidden or made visible).
+     */
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        // If this is a new product, hide the "Delete" menu item.
+        if (mCurrentProductUri == null) {
+            MenuItem menuItem = menu.findItem(R.id.action_delete);
+            menuItem.setVisible(false);
+            MenuItem orderItem = menu.findItem(R.id.action_order);
+            orderItem.setVisible(false);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // User clicked on a menu option in the app bar overflow menu
+        switch (item.getItemId()) {
+            // Respond to a click on the "Save" menu option
+            case R.id.action_save:
+                // Save product to database
+                if (!saveProduct()) {
+                    return true;
+                }
+
+                // Exit activity
+                finish();
+                return true;
+
+            case R.id.action_order:
+                // dialog with phone and email
+                showOrderConfirmationDialog();
+                return true;
+
+            // Respond to a click on the "Delete" menu option
+            case R.id.action_delete:
+                // Pop up confirmation dialog for deletion
+                showDeleteConfirmationDialog();
+                return true;
+
+            // Respond to a click on the "Up" arrow button in the app bar
+            case android.R.id.home:
+                // If the product hasn't changed, continue with navigating up to parent activity
+                // which is the {@link CatalogActivity}.
+                if (!mProductHasChanged) {
+                    NavUtils.navigateUpFromSameTask(EditorActivity.this);
+                    return true;
+                }
+
+                // Otherwise if there are unsaved changes, setup a dialog to warn the user.
+                // Create a click listener to handle the user confirming that
+                // changes should be discarded.
+                DialogInterface.OnClickListener discardButtonClickListener =
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                // User clicked "Discard" button, navigate to parent activity.
+                                NavUtils.navigateUpFromSameTask(EditorActivity.this);
+                            }
+                        };
+
+                // Show a dialog that notifies the user they have unsaved changes
+                showUnsavedChangesDialog(discardButtonClickListener);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * This method is called when the back button is pressed.
+     */
+    @Override
+    public void onBackPressed() {
+        // If the product hasn't changed, continue with handling back button press
+        if (!mProductHasChanged) {
+            super.onBackPressed();
+            return;
+        }
+
+        // Otherwise if there are unsaved changes, setup a dialog to warn the user.
+        // Create a click listener to handle the user confirming that changes should be discarded.
+        DialogInterface.OnClickListener discardButtonClickListener =
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        // User clicked "Discard" button, close the current activity.
+                        finish();
+                    }
+                };
+
+        // Show dialog that there are unsaved changes
+        showUnsavedChangesDialog(discardButtonClickListener);
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+        String[] projection = {
+                ProductEntry._ID,
+                ProductEntry.COLUMN_PRODUCT_NAME,
+                ProductEntry.COLUMN_PRODUCT_PRICE,
+                ProductEntry.COLUMN_PRODUCT_QUANTITY,
+                ProductEntry.COLUMN_SUPPLIERS_NAME,
+                ProductEntry.COLUMN_SUPPLIERS_CONTACT_NUMBER,
+                ProductEntry.COLUMN_IMAGE};
+
+        return new CursorLoader(this,
+                mCurrentProductUri,
+                projection,
+                null,
+                null,
+                null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        // Bail early if the cursor is null or there is less than 1 row in the cursor
+        if (cursor == null || cursor.getCount() < 1) {
+            return;
+        }
+        // Proceed with moving to the first row of the cursor and reading data from it
+        // (This should be the only row in the cursor)
+        if (cursor.moveToFirst()) {
+            // Find the columns of product attributes that we're interested in
+            int nameColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_NAME);
+            int priceColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_PRICE);
+            int quanitityColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_QUANTITY);
+            int supplierNameColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_SUPPLIERS_NAME);
+            int supplierPhoneColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_SUPPLIERS_CONTACT_NUMBER);
+            int productImageIndex = cursor.getColumnIndex(ProductEntry.COLUMN_IMAGE);
+
+            // Extract out the value from the Cursor for the given column index
+            String name = cursor.getString(nameColumnIndex);
+            String price = cursor.getString(priceColumnIndex);
+            int quanitity = cursor.getInt(quanitityColumnIndex);
+            String supplierName = cursor.getString(supplierNameColumnIndex);
+            String supplierPhone = cursor.getString(supplierPhoneColumnIndex);
+            Uri image = Uri.parse(cursor.getString(productImageIndex));
+
+            // Update the views on the screen with the values from the database
+            mProductNameEditText.setText(name);
+            mProductPriceEditText.setText(price);
+            mProductQuantityEditText.setText(Integer.toString(quanitity));
+            mSupplierNameEditText.setText(supplierName);
+            mSupplierPhoneEditText.setText(supplierPhone);
+            mProductimageImageView.setImageURI(image);
+            mProductimageImageView.setTag(image.toString());
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        // If the loader is invalidated, clear out all the data from the input fields.
+        mProductNameEditText.setText("");
+        mProductPriceEditText.setText("");
+        mProductQuantityEditText.setText("");
+        mSupplierNameEditText.setText("");
+        mSupplierPhoneEditText.setText("");
+    }
+
+    /**
+     * Decrease the quantity of product by one.
+     */
+    private void subtractOneToQuantity() {
+        String previousValueString = mProductQuantityEditText.getText().toString();
+        int previousValue;
+        if (previousValueString.isEmpty() || previousValueString.equals("0")) {
+        } else {
+            previousValue = Integer.parseInt(previousValueString);
+            mProductQuantityEditText.setText(String.valueOf(previousValue - 1));
+        }
+    }
+
+    /**
+     * Increase the quantity of product by one.
+     */
+    private void sumOneToQuantity() {
+        String previousValueString = mProductQuantityEditText.getText().toString();
+        int previousValue;
+        if (previousValueString.isEmpty()) {
+            previousValue = 0;
+        } else {
+            previousValue = Integer.parseInt(previousValueString);
+        }
+        mProductQuantityEditText.setText(String.valueOf(previousValue + 1));
+    }
+
+    /**
+     * Checks if the app has permission to view gallery.
+     */
+    private void checkPermission() {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
+            return;
+        }
+        openImageSelector();
+    }
+
+    /**
+     * Opens a new Intent so that user can choose image from gallery.
+     */
+    private void openImageSelector() {
+        Intent intent;
+        if (Build.VERSION.SDK_INT < 19) {
+            intent = new Intent(Intent.ACTION_GET_CONTENT);
+        } else {
+            intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+        }
+        intent.setType("image/*");
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
+    }
+
+    /**
+     * Perform the deletion of the product in the database.
+     */
+    private void deleteProduct() {
+        // Only perform the delete if this is an existing product.
+        if (mCurrentProductUri != null) {
+            // Call the ContentResolver to delete the product at the given content URI.
+            // Pass in null for the selection and selection args because the mCurrentProductUri
+            // content URI already identifies the product that we want.
+            int rowsDeleted = getContentResolver().delete(mCurrentProductUri, null, null);
+
+            // Show a toast message depending on whether or not the delete was successful.
+            if (rowsDeleted == 0) {
+                // If no rows were deleted, then there was an error with the delete.
+                Toast.makeText(this, getString(R.string.editor_delete_product_failed),
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                // Otherwise, the delete was successful and we can display a toast.
+                Toast.makeText(this, getString(R.string.editor_delete_product_successful),
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        // Close the activity
+        finish();
     }
 
     /**
@@ -342,6 +560,10 @@ public class EditorActivity extends AppCompatActivity implements
 
     }
 
+    /**
+     * Checks if the box has any text in it or not, and displays a message to user in case
+     * something is missing.
+     */
     private boolean checkIfValueSet(EditText box, String text, String description) {
         if (TextUtils.isEmpty(text)) {
             box.setError("Missing product " + description);
@@ -352,112 +574,9 @@ public class EditorActivity extends AppCompatActivity implements
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu options from the res/menu/menu_editor.xml file.
-        // This adds menu items to the app bar.
-        getMenuInflater().inflate(R.menu.menu_editor, menu);
-        return true;
-    }
-
-
     /**
-     * This method is called after invalidateOptionsMenu(), so that the
-     * menu can be updated (some menu items can be hidden or made visible).
+     * Prompt the user to confirm that they want to order this product.
      */
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        super.onPrepareOptionsMenu(menu);
-        // If this is a new product, hide the "Delete" menu item.
-        if (mCurrentProductUri == null) {
-            MenuItem menuItem = menu.findItem(R.id.action_delete);
-            menuItem.setVisible(false);
-            MenuItem orderItem = menu.findItem(R.id.action_order);
-            orderItem.setVisible(false);
-        }
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // User clicked on a menu option in the app bar overflow menu
-        switch (item.getItemId()) {
-            // Respond to a click on the "Save" menu option
-            case R.id.action_save:
-                // Save product to database
-                if (!saveProduct()) {
-                    return true;
-                }
-
-                // Exit activity
-                finish();
-                return true;
-
-            case R.id.action_order:
-                // dialog with phone and email
-                showOrderConfirmationDialog();
-                return true;
-
-            // Respond to a click on the "Delete" menu option
-            case R.id.action_delete:
-                // Pop up confirmation dialog for deletion
-                showDeleteConfirmationDialog();
-                return true;
-
-            // Respond to a click on the "Up" arrow button in the app bar
-            case android.R.id.home:
-                // If the product hasn't changed, continue with navigating up to parent activity
-                // which is the {@link CatalogActivity}.
-                if (!mProductHasChanged) {
-                    NavUtils.navigateUpFromSameTask(EditorActivity.this);
-                    return true;
-                }
-
-                // Otherwise if there are unsaved changes, setup a dialog to warn the user.
-                // Create a click listener to handle the user confirming that
-                // changes should be discarded.
-                DialogInterface.OnClickListener discardButtonClickListener =
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                // User clicked "Discard" button, navigate to parent activity.
-                                NavUtils.navigateUpFromSameTask(EditorActivity.this);
-                            }
-                        };
-
-                // Show a dialog that notifies the user they have unsaved changes
-                showUnsavedChangesDialog(discardButtonClickListener);
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    /**
-     * This method is called when the back button is pressed.
-     */
-    @Override
-    public void onBackPressed() {
-        // If the product hasn't changed, continue with handling back button press
-        if (!mProductHasChanged) {
-            super.onBackPressed();
-            return;
-        }
-
-        // Otherwise if there are unsaved changes, setup a dialog to warn the user.
-        // Create a click listener to handle the user confirming that changes should be discarded.
-        DialogInterface.OnClickListener discardButtonClickListener =
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        // User clicked "Discard" button, close the current activity.
-                        finish();
-                    }
-                };
-
-        // Show dialog that there are unsaved changes
-        showUnsavedChangesDialog(discardButtonClickListener);
-    }
-
     private void showOrderConfirmationDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(R.string.order_message);
@@ -513,71 +632,6 @@ public class EditorActivity extends AppCompatActivity implements
         alertDialog.show();
     }
 
-    @Override
-    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        String[] projection = {
-                ProductEntry._ID,
-                ProductEntry.COLUMN_PRODUCT_NAME,
-                ProductEntry.COLUMN_PRODUCT_PRICE,
-                ProductEntry.COLUMN_PRODUCT_QUANTITY,
-                ProductEntry.COLUMN_SUPPLIERS_NAME,
-                ProductEntry.COLUMN_SUPPLIERS_CONTACT_NUMBER,
-                ProductEntry.COLUMN_IMAGE};
-
-        return new CursorLoader(this,
-                mCurrentProductUri,
-                projection,
-                null,
-                null,
-                null);
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-        // Bail early if the cursor is null or there is less than 1 row in the cursor
-        if (cursor == null || cursor.getCount() < 1) {
-            return;
-        }
-        // Proceed with moving to the first row of the cursor and reading data from it
-        // (This should be the only row in the cursor)
-        if (cursor.moveToFirst()) {
-            // Find the columns of product attributes that we're interested in
-            int nameColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_NAME);
-            int priceColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_PRICE);
-            int quanitityColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_QUANTITY);
-            int supplierNameColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_SUPPLIERS_NAME);
-            int supplierPhoneColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_SUPPLIERS_CONTACT_NUMBER);
-            int productImageIndex = cursor.getColumnIndex(ProductEntry.COLUMN_IMAGE);
-
-            // Extract out the value from the Cursor for the given column index
-            String name = cursor.getString(nameColumnIndex);
-            String price = cursor.getString(priceColumnIndex);
-            int quanitity = cursor.getInt(quanitityColumnIndex);
-            String supplierName = cursor.getString(supplierNameColumnIndex);
-            String supplierPhone = cursor.getString(supplierPhoneColumnIndex);
-            Uri image = Uri.parse(cursor.getString(productImageIndex));
-
-            // Update the views on the screen with the values from the database
-            mProductNameEditText.setText(name);
-            mProductPriceEditText.setText(price);
-            mProductQuantityEditText.setText(Integer.toString(quanitity));
-            mSupplierNameEditText.setText(supplierName);
-            mSupplierPhoneEditText.setText(supplierPhone);
-            mProductimageImageView.setImageURI(image);
-            mProductimageImageView.setTag(image.toString());
-        }
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-        // If the loader is invalidated, clear out all the data from the input fields.
-        mProductNameEditText.setText("");
-        mProductPriceEditText.setText("");
-        mProductQuantityEditText.setText("");
-        mSupplierNameEditText.setText("");
-        mSupplierPhoneEditText.setText("");
-    }
-
     /**
      * Show a dialog that warns the user there are unsaved changes that will be lost
      * if they continue leaving the editor.
@@ -606,35 +660,6 @@ public class EditorActivity extends AppCompatActivity implements
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }
-
-
-    /**
-     * Perform the deletion of the product in the database.
-     */
-    private void deleteProduct() {
-        // Only perform the delete if this is an existing product.
-        if (mCurrentProductUri != null) {
-            // Call the ContentResolver to delete the product at the given content URI.
-            // Pass in null for the selection and selection args because the mCurrentProductUri
-            // content URI already identifies the product that we want.
-            int rowsDeleted = getContentResolver().delete(mCurrentProductUri, null, null);
-
-            // Show a toast message depending on whether or not the delete was successful.
-            if (rowsDeleted == 0) {
-                // If no rows were deleted, then there was an error with the delete.
-                Toast.makeText(this, getString(R.string.editor_delete_product_failed),
-                        Toast.LENGTH_SHORT).show();
-            } else {
-                // Otherwise, the delete was successful and we can display a toast.
-                Toast.makeText(this, getString(R.string.editor_delete_product_successful),
-                        Toast.LENGTH_SHORT).show();
-            }
-        }
-
-        // Close the activity
-        finish();
-    }
-
 }
 
 
