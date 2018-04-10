@@ -78,9 +78,6 @@ public class EditorActivity extends AppCompatActivity implements
      */
     private EditText mSupplierPhoneEditText;
 
-    private ImageButton mdecreaseQuantity;
-    private ImageButton mincreaseQuantity;
-
     /* Button for selecting the image */
     private Button mImageButton;
 
@@ -121,15 +118,15 @@ public class EditorActivity extends AppCompatActivity implements
         }
 
         // Find all relevant views that we will need to read user input from
-        mProductNameEditText = (EditText) findViewById(R.id.edit_product_name);
-        mProductPriceEditText = (EditText) findViewById(R.id.edit_product_price);
-        mProductQuantityEditText = (EditText) findViewById(R.id.edit_product_quantity);
-        mSupplierNameEditText = (EditText) findViewById(R.id.edit_supplier_name);
-        mSupplierPhoneEditText = (EditText) findViewById(R.id.edit_supplier_phone);
+        mProductNameEditText = findViewById(R.id.edit_product_name);
+        mProductPriceEditText = findViewById(R.id.edit_product_price);
+        mProductQuantityEditText = findViewById(R.id.edit_product_quantity);
+        mSupplierNameEditText = findViewById(R.id.edit_supplier_name);
+        mSupplierPhoneEditText = findViewById(R.id.edit_supplier_phone);
         mImageButton = findViewById(R.id.select_image);
         mProductimageImageView = findViewById(R.id.image_view);
-        mdecreaseQuantity = (ImageButton) findViewById(R.id.decrease_quantity);
-        mincreaseQuantity = (ImageButton) findViewById(R.id.increase_quantity);
+        ImageButton mdecreaseQuantity = findViewById(R.id.decrease_quantity);
+        ImageButton mincreaseQuantity = findViewById(R.id.increase_quantity);
 
         mdecreaseQuantity.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -160,7 +157,6 @@ public class EditorActivity extends AppCompatActivity implements
         String previousValueString = mProductQuantityEditText.getText().toString();
         int previousValue;
         if (previousValueString.isEmpty() || previousValueString.equals("0")) {
-            return;
         } else {
             previousValue = Integer.parseInt(previousValueString);
             mProductQuantityEditText.setText(String.valueOf(previousValue - 1));
@@ -178,7 +174,7 @@ public class EditorActivity extends AppCompatActivity implements
         mProductQuantityEditText.setText(String.valueOf(previousValue + 1));
     }
 
-    public void checkPermission() {
+    private void checkPermission() {
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -190,7 +186,7 @@ public class EditorActivity extends AppCompatActivity implements
         openImageSelector();
     }
 
-    public void openImageSelector() {
+    private void openImageSelector() {
         Intent intent;
         if (Build.VERSION.SDK_INT < 19) {
             intent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -231,7 +227,7 @@ public class EditorActivity extends AppCompatActivity implements
 
             if (resultData != null) {
                 mImageUri = resultData.getData();
-                Log.i("ImageUri",mImageUri.toString());
+                Log.i("ImageUri", mImageUri.toString());
                 mProductimageImageView.setImageURI(mImageUri);
                 mProductimageImageView.setTag(mImageUri.toString());
             }
@@ -254,11 +250,9 @@ public class EditorActivity extends AppCompatActivity implements
         String supplierPhoneString = mSupplierPhoneEditText.getText().toString().trim();
         try {
             String path = mProductimageImageView.getTag().toString();
-            Log.i("image",path);
             mImageUri = Uri.parse(path);
-        }
-        catch (Exception e) {
-
+        } catch (Exception e) {
+            Log.d("saveProduct", e.toString());
         }
 
         // Check if this is supposed to be a new product
@@ -394,7 +388,7 @@ public class EditorActivity extends AppCompatActivity implements
                 if (!saveProduct()) {
                     return true;
                 }
-                ;
+
                 // Exit activity
                 finish();
                 return true;

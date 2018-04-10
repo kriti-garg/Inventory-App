@@ -27,7 +27,7 @@ import static com.example.kriti.inventoryapp.data.ProductContract.ProductEntry.T
 /**
  * Database helper for Inventory app. Manages database creation and version management.
  */
-public class InvertoryDbHelper extends SQLiteOpenHelper {
+class InvertoryDbHelper extends SQLiteOpenHelper {
 
     public static final String LOG_TAG = InvertoryDbHelper.class.getSimpleName();
 

@@ -37,7 +37,7 @@
                 android:layout_centerHorizontal="true"
                 android:fontFamily="sans-serif-medium"
                 android:paddingTop="16dp"
-                android:text="Cart is Empty!!"
+                android:text="@string/cart_empty"
                 android:textAppearance="?android:textAppearanceMedium" />
 
             <TextView
@@ -49,7 +49,7 @@
                 android:layout_margin="20dp"
                 android:fontFamily="sans-serif"
                 android:paddingTop="4dp"
-                android:text="Looks like you have no items in the shopping cart. Add some stuff now!"
+                android:text="@string/add_stuff_msg"
                 android:textAppearance="?android:textAppearanceSmall"
                 android:textColor="#A2AAB0" />
         </RelativeLayout>

@@ -4,10 +4,11 @@ android {
     compileSdkVersion 26
     defaultConfig {
         applicationId "com.example.kriti.inventoryapp"
-        minSdkVersion 15
+        minSdkVersion 16
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
+        vectorDrawables.useSupportLibrary = true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

@@ -13,6 +13,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:padding="16dp"
     tools:context=".EditorActivity">
@@ -70,7 +71,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.4"
-            android:src="@drawable/ic_add_black_24dp" />
+            app:srcCompat="@drawable/ic_add_black_24dp" />
 
         <!-- Input fields -->
         <LinearLayout
@@ -97,7 +98,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.4"
-            android:src="@drawable/ic_remove_black_24dp" />
+            app:srcCompat="@drawable/ic_remove_black_24dp" />
 
 
     </LinearLayout>
@@ -162,7 +163,7 @@
                 android:id="@+id/select_image"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Select Image" />
+                android:text="@string/select_image" />
 
             <ImageView
                 android:id="@+id/image_view"

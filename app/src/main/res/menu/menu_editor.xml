@@ -7,16 +7,16 @@
     <item
         android:id="@+id/action_save"
         android:icon="@drawable/ic_done"
-        android:title="save"
+        android:title="@string/save"
         app:showAsAction="always" />
 
     <item
         android:id="@+id/action_order"
-        android:title="Order More"
+        android:title="@string/order_more"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/action_delete"
-        android:title="Delete Item"
+        android:title="@string/delete_item"
         app:showAsAction="never" />
 </menu>

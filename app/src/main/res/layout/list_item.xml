@@ -12,9 +12,11 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="130dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal"
     android:padding="10dp"
-    android:weightSum="7">
+    android:weightSum="7"
+    android:baselineAligned="false">
 
     <LinearLayout
         android:layout_width="0dp"
@@ -42,7 +44,7 @@
             android:layout_weight="1"
             android:fontFamily="sans-serif"
             android:paddingTop="20dp"
-            android:text="Item name "
+            android:text="@string/item_name"
             android:textAllCaps="true"
             android:textAppearance="?android:textAppearanceMedium"
             android:textColor="#2B3D4D"
@@ -53,7 +55,7 @@
             android:layout_width="50dp"
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif"
-            android:text="Item price"
+            android:text="@string/item_price"
             android:textAppearance="?android:textAppearanceSmall"
             android:textColor="#201f1f"
             android:textSize="20sp" />
@@ -72,7 +74,7 @@
             android:layout_height="80dp"
             android:layout_centerInParent="true"
             android:scaleType="centerCrop"
-            android:src="@drawable/ic_local_grocery_store_24dp" />
+            app:srcCompat ="@drawable/ic_local_grocery_store_24dp" />
 
         <TextView
             android:id="@+id/quantity"
@@ -81,7 +83,7 @@
             android:layout_centerInParent="true"
             android:layout_gravity="center_horizontal"
             android:fontFamily="sans-serif"
-            android:text="item Quantity"
+            android:text="@string/item_quantity"
             android:textAppearance="?android:textAppearanceSmall"
             android:textColor="#000000" />
 

@@ -83,6 +83,20 @@
     <string name="category_image">Image</string>
 
     <string name="order_message">You can place an order for this item by phone</string>
+    <string name="order_more">Order More</string>
+
     <string name="phone">Phone</string>
     <string name="Rs">\u20B9</string>
+
+    <string name="select_image">Select Image</string>
+    <string name="cart_empty">Cart is Empty!!</string>
+    <string name="add_stuff_msg">Looks like you have no items in the shopping cart. Add some stuff now!</string>
+    <string name="item_name">Item Name</string>
+    <string name="item_price">Item Price</string>
+    <string name="item_quantity">Item Quantity</string>
+    <string name="dummy_data">Insert Dummy Data</string>
+    <string name="delete_all">Delete all</string>
+    <string name="delete_item">Delete Item</string>
+    <string name="save">Save</string>
+
 </resources>

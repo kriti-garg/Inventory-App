@@ -34,18 +34,17 @@ import com.example.kriti.inventoryapp.data.ProductContract.ProductEntry;
  * that uses a {@link Cursor} of product data as its data source. This adapter knows
  * how to create list items for each row of product data in the {@link Cursor}.
  */
-public class ProductCursorAdapter extends CursorAdapter {
+class ProductCursorAdapter extends CursorAdapter {
 
     private final MainActivity activity;
 
     /**
      * Constructs a new {@link ProductCursorAdapter}.
+     *  @param context The context
      *
-     * @param context The context
-     * @param c       The cursor from which to get the data.
      */
-    public ProductCursorAdapter(MainActivity context, Cursor c) {
-        super(context, c, 0 /* flags */);
+    public ProductCursorAdapter(MainActivity context) {
+        super(context, null, 0 /* flags */);
         this.activity = context;
     }
 
@@ -77,11 +76,11 @@ public class ProductCursorAdapter extends CursorAdapter {
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
         // Find individual views that we want to modify in the list item layout
-        TextView nameTextView = (TextView) view.findViewById(R.id.name);
-        TextView priceTextView = (TextView) view.findViewById(R.id.price);
+        TextView nameTextView = view.findViewById(R.id.name);
+        TextView priceTextView = view.findViewById(R.id.price);
         TextView quantityTextView = view.findViewById(R.id.quantity);
-        ImageView image = (ImageView) view.findViewById(R.id.image_view);
-        ImageView order = (ImageView) view.findViewById(R.id.order);
+        ImageView image = view.findViewById(R.id.image_view);
+        ImageView order = view.findViewById(R.id.order);
 
 
         // Find the columns of product attributes that we're interested in
@@ -104,7 +103,7 @@ public class ProductCursorAdapter extends CursorAdapter {
 
         final long id = cursor.getLong(cursor.getColumnIndex(ProductEntry._ID));
         String p = "i" + id;
-        Log.i("id",p);
+        Log.i("id", p);
         order.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     /**
      * Adapter for the ListView
      */
-    ProductCursorAdapter mCursorAdapter;
+    private ProductCursorAdapter mCursorAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         setContentView(R.layout.activity_main);
 
         // Setup FAB to open EditorActivity
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         });
 
         // Find the ListView which will be populated with the product data
-        ListView productListView = (ListView) findViewById(R.id.list);
+        ListView productListView = findViewById(R.id.list);
 
         // Find and set empty view on the ListView, so that it only shows when the list has 0 items.
         View emptyView = findViewById(R.id.empty_view);
@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         // Setup an Adapter to create a list item for each row of product data in the Cursor.
         // There is no product data yet (until the loader finishes) so pass in null for the Cursor.
-        mCursorAdapter = new ProductCursorAdapter(this, null);
+        mCursorAdapter = new ProductCursorAdapter(this);
         productListView.setAdapter(mCursorAdapter);
 
         // Setup the item click listener
@@ -139,13 +139,13 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     public void clickOnSale(long id, int quantity) {
-        Log.i("id","d"+id);
+        Log.i("id", "d" + id);
         int newQuantity = 0;
         if (quantity > 0) {
             newQuantity = quantity - 1;
         }
         String selection = ProductEntry._ID + "=?";
-        String[] selectionArgs = new String[] { String.valueOf(id) };
+        String[] selectionArgs = new String[]{String.valueOf(id)};
         ContentValues values = new ContentValues();
         values.put(ProductEntry.COLUMN_PRODUCT_QUANTITY, newQuantity);
         getContentResolver().update(ProductEntry.CONTENT_URI, values, selection, selectionArgs);
